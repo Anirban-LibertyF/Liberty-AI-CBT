@@ -1,0 +1,8 @@
+# Apache (XAMPP): only public/ is meant to be web-accessible.
+# Visiting the project folder sends you to public/; src/, database/, config.php etc. are blocked.
+Options -Indexes
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^$ public/ [R=302,L]
+  RewriteRule ^(?!public/) - [F,L]
+</IfModule>
