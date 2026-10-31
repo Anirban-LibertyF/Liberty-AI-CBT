@@ -1,4 +1,4 @@
-# MasterJee.AI — PHP + MySQL edition
+# LibertyCBT.Ai — PHP + MySQL edition
 
 The React/Vite app in `../src` rebuilt as a server-rendered PHP site backed by MySQL/MariaDB. Same three screens (blueprint builder → exam hall → scorecard), same TCS iON-style palette, same math/SVG rendering, same Gemini integration. The React project is untouched.
 

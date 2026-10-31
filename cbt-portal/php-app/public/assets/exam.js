@@ -216,7 +216,7 @@
     app.innerHTML = `
     <header class="bg-red-700 text-white px-4 py-2.5 flex items-center justify-between shadow-md shrink-0 z-20">
       <div class="flex items-center gap-3 min-w-0">
-        <div class="w-8 h-8 rounded-lg bg-white text-red-700 flex items-center justify-center font-bold text-sm shrink-0">MJ</div>
+        <div class="w-8 h-8 rounded-lg bg-white text-red-700 flex items-center justify-center font-bold text-sm shrink-0">LC</div>
         <div class="truncate">
           <h1 class="text-sm sm:text-base font-bold truncate">${esc(E.title)}</h1>
           <p class="text-[11px] text-red-100 hidden sm:block">Total questions: ${qs.length}</p>

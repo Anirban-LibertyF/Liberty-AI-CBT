@@ -14,7 +14,7 @@ function page_head(string $title, string $bodyClass): void
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= h($title) ?></title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23dc2626'/><text x='32' y='42' font-family='Arial,Helvetica,sans-serif' font-size='26' font-weight='bold' fill='white' text-anchor='middle'>MJ</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23dc2626'/><text x='32' y='42' font-family='Arial,Helvetica,sans-serif' font-size='24' font-weight='bold' fill='white' text-anchor='middle'>LC</text></svg>">
   <script src="https://cdn.tailwindcss.com/3.4.4"></script>
   <script>
     // Red & white theme: the accent colours used in the markup (indigo, blue) are remapped to Tailwind's red scale.
@@ -27,6 +27,56 @@ function page_head(string $title, string $bodyClass): void
     body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
     .math-rendered { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; }
     svg[data-lucide], .lucide { flex-shrink: 0; }
+
+    /* ---------- LibertyCBT.Ai: brand gradient, 3D hover & transition polish ---------- */
+    .brand-gradient {
+      background-image: linear-gradient(90deg, #dc2626, #f97316, #dc2626);
+      background-size: 200% auto;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      animation: brand-sheen 5s linear infinite;
+    }
+    @keyframes brand-sheen { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+
+    .gradient-animated {
+      background: linear-gradient(120deg, #fef2f2, #ffffff, #fee2e2, #ffffff, #fef2f2);
+      background-size: 300% 300%;
+      animation: gradient-flow 14s ease infinite;
+    }
+    @keyframes gradient-flow {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .logo-3d {
+      transform-style: preserve-3d;
+      transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease;
+    }
+    .logo-3d:hover { transform: rotateY(18deg) rotateX(8deg) translateZ(2px) scale(1.06); }
+
+    .tilt-card {
+      transform-style: preserve-3d;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+      will-change: transform;
+    }
+    .tilt-card:hover {
+      box-shadow: 0 18px 32px -14px rgba(220,38,38,.28), 0 4px 10px -4px rgba(0,0,0,.08);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tilt-card, .logo-3d, .brand-gradient, .gradient-animated { animation: none !important; transition: none !important; }
+    }
+
+    .fade-in-up { animation: fade-in-up .55s cubic-bezier(.2,.7,.3,1) both; }
+    @keyframes fade-in-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in-up.d1 { animation-delay: .06s; }
+    .fade-in-up.d2 { animation-delay: .12s; }
+    .fade-in-up.d3 { animation-delay: .18s; }
+
+    a, button { transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .15s ease; }
+    button:active { transform: scale(0.97); }
+
+    /* Mobile safety: never allow horizontal scroll from a stray wide element */
+    html, body { overflow-x: hidden; }
   </style>
 </head>
 <body class="<?= h($bodyClass) ?>">

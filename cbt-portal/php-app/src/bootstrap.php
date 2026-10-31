@@ -67,7 +67,7 @@ set_exception_handler(function (Throwable $e): void {
     $message = $e instanceof AppError
         ? $e->getMessage()
         : (($e instanceof PDOException && in_array($e->getCode(), [1049, 2002, 1045, '1049', '2002', '1045'], true))
-            ? 'MasterJee.AI is temporarily unavailable. Please try again in a few minutes.'
+            ? 'LibertyCBT.Ai is temporarily unavailable. Please try again in a few minutes.'
             : 'Something went wrong. Please try again.');
     if (!headers_sent()) {
         http_response_code($status);
@@ -82,14 +82,14 @@ set_exception_handler(function (Throwable $e): void {
         echo '<p style="font-family:system-ui;padding:2rem">' . h($message) . ' <a href="index.php">Back to home</a></p>';
         return;
     }
-    page_head('MasterJee.AI', 'min-h-screen bg-red-50 text-slate-900');
+    page_head('LibertyCBT.Ai', 'min-h-screen bg-red-50 text-slate-900');
     ?>
     <header class="border-b border-red-100 bg-white backdrop-blur-md sticky top-0 z-30">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">MJ</div>
+          <div class="logo-3d w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">LC</div>
           <div>
-            <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900">MasterJee<span class="text-red-600">.AI</span></h1>
+            <h1 class="text-lg sm:text-xl font-bold tracking-tight"><span class="brand-gradient">LibertyCBT</span><span class="text-slate-900">.Ai</span></h1>
           </div>
         </div>
         <div class="flex items-center gap-3">

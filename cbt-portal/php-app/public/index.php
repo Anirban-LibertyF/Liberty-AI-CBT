@@ -8,15 +8,15 @@ $demoCount = (int) ($demo['question_count'] ?? 0);
 $aiReady = Gemini::isConfigured();
 $first = $presets[0] ?? null;
 
-page_head('MasterJee.AI — AI Mock Tests for Competitive Exams', 'min-h-screen bg-red-50 text-slate-900');
+page_head('LibertyCBT.Ai — AI Mock Tests for Competitive Exams', 'min-h-screen bg-red-50 text-slate-900');
 ?>
 <div class="min-h-screen flex flex-col">
   <header class="border-b border-red-100 bg-white backdrop-blur-md sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">MJ</div>
+        <div class="logo-3d w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">LC</div>
         <div>
-          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900">MasterJee<span class="text-red-600">.AI</span></h1>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight"><span class="brand-gradient">LibertyCBT</span><span class="text-slate-900">.Ai</span></h1>
           <p class="text-xs text-slate-500">AI mock tests for JEE, NEET, SSC, Banking, CAT and more</p>
         </div>
       </div>
@@ -27,7 +27,7 @@ page_head('MasterJee.AI — AI Mock Tests for Competitive Exams', 'min-h-screen 
   </header>
 
   <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 flex-1">
-    <div class="mb-8 rounded-2xl bg-gradient-to-r from-red-50 via-white to-white border border-indigo-500/30 p-5 sm:p-6 shadow-xl">
+    <div class="gradient-animated fade-in-up mb-8 rounded-2xl border border-indigo-500/30 p-5 sm:p-6 shadow-xl">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
         <div class="lg:col-span-2 space-y-2">
           <div class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-600">
@@ -54,15 +54,6 @@ page_head('MasterJee.AI — AI Mock Tests for Competitive Exams', 'min-h-screen 
             </button>
           </form>
           <?php endif; ?>
-          <?php foreach (Exams::builtins() as $b): if ($b['slug'] === 'demo') { continue; } ?>
-          <form method="post" action="start.php">
-            <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-            <input type="hidden" name="exam" value="<?= h($b['slug']) ?>">
-            <button class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-red-50 text-slate-800 font-semibold text-sm border border-red-300 flex items-center justify-center gap-2 transition-all cursor-pointer">
-              <?= icon(['organic' => 'flask-conical', 'neet-bio' => 'dna'][$b['slug']] ?? 'book-open', 'w-4 h-4 text-red-600') ?><span><?= h($b['title']) ?> (<?= (int) $b['question_count'] ?> questions)</span>
-            </button>
-          </form>
-          <?php endforeach; ?>
         </div>
       </div>
     </div>
@@ -70,7 +61,7 @@ page_head('MasterJee.AI — AI Mock Tests for Competitive Exams', 'min-h-screen 
     <?php if (!$aiReady): ?>
     <div class="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-500/30 flex items-start gap-3 text-amber-800 text-sm">
       <?= icon('circle-alert', 'w-5 h-5 text-amber-600 mt-0.5') ?>
-      <p>Creating new AI tests is not available right now. You can still take the ready-made mock tests above.</p>
+      <p>Creating new AI tests is not available right now. You can still take the ready-made mock tests below.</p>
     </div>
     <?php endif; ?>
     <?php if (!$demo): ?>
@@ -82,6 +73,35 @@ page_head('MasterJee.AI — AI Mock Tests for Competitive Exams', 'min-h-screen 
 
     <div id="gen-error" class="hidden mb-6 p-4 rounded-xl bg-rose-50 border border-rose-500/40 text-rose-800 text-sm"></div>
 
+    <?php $readyMade = array_values(array_filter(Exams::builtins(), fn ($b) => $b['slug'] !== 'demo')); ?>
+    <?php if ($readyMade): ?>
+    <div class="mb-8 fade-in-up">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-sm font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+          <?= icon('book-open-check', 'w-4 h-4 text-red-600') ?> Ready-made Practice Papers
+        </span>
+        <span class="text-xs text-slate-500">Offline question banks, no AI needed — attempt instantly</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <?php foreach ($readyMade as $b): ?>
+        <form method="post" action="start.php">
+          <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
+          <input type="hidden" name="exam" value="<?= h($b['slug']) ?>">
+          <button class="tilt-card w-full h-full p-4 rounded-xl border border-red-100 bg-white hover:border-red-300 text-left transition-all cursor-pointer flex items-start gap-3">
+            <span class="w-10 h-10 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center shrink-0">
+              <?= icon(['organic' => 'flask-conical', 'neet-bio' => 'dna', 'rrb-ntpc' => 'train-front', 'wbcs-prelims' => 'landmark', 'wbjee' => 'calculator', 'jenpas-ug' => 'stethoscope', 'smfwbee' => 'heart-pulse'][$b['slug']] ?? 'book-open', 'w-5 h-5 text-red-600') ?>
+            </span>
+            <span>
+              <span class="block font-bold text-slate-900 text-sm leading-snug"><?= h($b['title']) ?></span>
+              <span class="block text-xs text-slate-500 mt-1"><?= (int) $b['question_count'] ?> questions</span>
+            </span>
+          </button>
+        </form>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php endif; ?>
+
     <div class="mb-8">
       <div class="flex items-center justify-between mb-3">
         <span class="text-sm font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
@@ -91,7 +111,7 @@ page_head('MasterJee.AI — AI Mock Tests for Competitive Exams', 'min-h-screen 
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3" id="preset-grid">
         <?php foreach ($presets as $p): ?>
-        <button type="button" data-preset="<?= h($p['id']) ?>" class="preset-card p-4 rounded-xl border text-left transition-all cursor-pointer bg-white border-red-100 hover:border-red-200">
+        <button type="button" data-preset="<?= h($p['id']) ?>" class="preset-card tilt-card p-4 rounded-xl border text-left transition-all cursor-pointer bg-white border-red-100 hover:border-red-200">
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-red-100 text-red-700"><?= h($p['badge']) ?></span>
             <span class="preset-check hidden"><?= icon('circle-check', 'w-4 h-4 text-red-600') ?></span>
@@ -103,7 +123,7 @@ page_head('MasterJee.AI — AI Mock Tests for Competitive Exams', 'min-h-screen 
       </div>
     </div>
 
-    <div class="mb-8 rounded-2xl bg-white border border-indigo-500/30 p-5 sm:p-6">
+    <div class="fade-in-up d1 mb-8 rounded-2xl bg-white border border-indigo-500/30 p-5 sm:p-6">
       <div class="flex items-center justify-between mb-1">
         <span class="text-sm font-semibold uppercase tracking-wider text-slate-800 flex items-center gap-2">
           <?= icon('target', 'w-4 h-4 text-red-600') ?> Or: practice ONE subject &amp; topic only
@@ -141,7 +161,7 @@ page_head('MasterJee.AI — AI Mock Tests for Competitive Exams', 'min-h-screen 
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div class="lg:col-span-5 bg-white border border-red-100 rounded-2xl p-5 sm:p-6 space-y-5 h-fit">
+      <div class="fade-in-up d2 lg:col-span-5 bg-white border border-red-100 rounded-2xl p-5 sm:p-6 space-y-5 h-fit">
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2 border-b border-red-100 pb-3">
           <?= icon('sliders-vertical', 'w-4 h-4 text-red-600') ?> 2. Test settings &amp; marking
         </h3>
@@ -199,7 +219,7 @@ page_head('MasterJee.AI — AI Mock Tests for Competitive Exams', 'min-h-screen 
         </div>
       </div>
 
-      <div class="lg:col-span-7 bg-white border border-red-100 rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+      <div class="fade-in-up d3 lg:col-span-7 bg-white border border-red-100 rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between border-b border-red-100 pb-3 mb-4">
             <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">

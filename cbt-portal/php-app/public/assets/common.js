@@ -33,3 +33,31 @@ window.formatClock = (seconds) => {
 
 /** lucide-style icon placeholder for JS-built markup; call refreshIcons() afterwards. */
 window.ico = (name, cls = 'w-4 h-4') => `<i data-lucide="${name}" class="${cls}"></i>`;
+
+// Subtle 3D tilt on hover for elements with class "tilt-card". Skipped on touch/coarse-pointer
+// devices and when the user prefers reduced motion, since it's purely decorative.
+(() => {
+  const enabled = window.matchMedia('(pointer: fine)').matches
+    && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!enabled) return;
+
+  const onMove = (e) => {
+    const el = e.currentTarget;
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    el.style.transform = `perspective(700px) rotateX(${(-py * 7).toFixed(2)}deg) rotateY(${(px * 7).toFixed(2)}deg) translateZ(4px)`;
+  };
+  const onLeave = (e) => { e.currentTarget.style.transform = ''; };
+
+  const bind = (el) => {
+    if (el.dataset.tiltBound) return;
+    el.dataset.tiltBound = '1';
+    el.addEventListener('mousemove', onMove);
+    el.addEventListener('mouseleave', onLeave);
+  };
+
+  new MutationObserver(() => document.querySelectorAll('.tilt-card').forEach(bind))
+    .observe(document.body, { childList: true, subtree: true });
+  document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('.tilt-card').forEach(bind));
+})();

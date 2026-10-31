@@ -6,13 +6,13 @@ start_session();
 $ids = array_keys($_SESSION['own']['attempt'] ?? []);
 $history = Attempts::historyForSession($ids);
 
-page_head('My Test — MasterJee.AI', 'min-h-screen bg-red-50 text-slate-900 pb-16');
+page_head('My Test — LibertyCBT.Ai', 'min-h-screen bg-red-50 text-slate-900 pb-16');
 ?>
 <header class="border-b border-red-100 bg-white backdrop-blur-md sticky top-0 z-30">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">MJ</div>
-      <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900">MasterJee<span class="text-red-600">.AI</span></h1>
+      <div class="logo-3d w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">LC</div>
+      <h1 class="text-lg sm:text-xl font-bold tracking-tight"><span class="brand-gradient">LibertyCBT</span><span class="text-slate-900">.Ai</span></h1>
     </div>
     <div class="flex items-center gap-3">
       <?php site_nav(); ?>

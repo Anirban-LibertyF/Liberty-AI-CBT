@@ -19,7 +19,7 @@ $boot = [
     'questions' => $questions,
 ];
 
-page_head($attempt['title'] . ' | MasterJee.AI', 'h-screen flex flex-col bg-red-50 text-slate-900 select-none overflow-hidden');
+page_head($attempt['title'] . ' | LibertyCBT.Ai', 'h-screen flex flex-col bg-red-50 text-slate-900 select-none overflow-hidden');
 ?>
 <div id="app" class="h-screen flex flex-col overflow-hidden"></div>
 <script>window.EXAM = <?= js_json($boot) ?>;</script>

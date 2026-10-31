@@ -23,13 +23,13 @@ $n = fn ($v) => h(round((float) $v, 2) + 0);
 $pct = fn ($part) => $stats['totalQuestions'] > 0 ? $part / $stats['totalQuestions'] * 100 : 0;
 $avgSeconds = (int) round($stats['totalTimeSpent'] / max(1, $stats['attemptedCount']));
 
-page_head($attempt['title'] . ' — Scorecard | MasterJee.AI', 'min-h-screen bg-red-50 text-slate-900 pb-16');
+page_head($attempt['title'] . ' — Scorecard | LibertyCBT.Ai', 'min-h-screen bg-red-50 text-slate-900 pb-16');
 ?>
 <header class="border-b border-red-100 bg-white sticky top-0 z-30 print:hidden">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">MJ</div>
-      <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900">MasterJee<span class="text-red-600">.AI</span></h1>
+      <div class="logo-3d w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">LC</div>
+      <h1 class="text-lg sm:text-xl font-bold tracking-tight"><span class="brand-gradient">LibertyCBT</span><span class="text-slate-900">.Ai</span></h1>
     </div>
     <div class="flex items-center gap-3">
       <a href="history.php" class="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-slate-700 text-xs sm:text-sm font-semibold border border-red-200 flex items-center gap-2">
@@ -69,27 +69,29 @@ page_head($attempt['title'] . ' — Scorecard | MasterJee.AI', 'min-h-screen bg-
     .solution.hidden { display: block !important; }
     .solution { break-inside: avoid; }
     body { background: #fff !important; }
+    .gradient-animated, .brand-gradient { animation: none !important; background: #fef2f2 !important; -webkit-text-fill-color: #dc2626 !important; }
+    .tilt-card { transform: none !important; box-shadow: none !important; }
   }
 </style>
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
   <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-    <div class="p-5 rounded-2xl bg-gradient-to-br from-red-100 to-white border border-indigo-500/40">
+    <div class="tilt-card fade-in-up gradient-animated p-5 rounded-2xl border border-indigo-500/40">
       <div class="text-xs font-semibold uppercase tracking-wider text-red-700">Net Total Score</div>
       <div class="text-3xl font-extrabold text-slate-900 mt-1"><?= $n($stats['totalScore']) ?> <span class="text-base font-medium text-slate-500">/ <?= $n($stats['maxScore']) ?></span></div>
       <div class="text-xs text-red-700 mt-2">Marking: +<?= $n($pos) ?> / -<?= $n($neg) ?></div>
     </div>
-    <div class="p-5 rounded-2xl bg-white border border-red-100">
+    <div class="tilt-card fade-in-up d1 p-5 rounded-2xl bg-white border border-red-100">
       <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Accuracy</div>
       <div class="text-3xl font-extrabold text-emerald-600 mt-1"><?= $stats['accuracy'] ?>%</div>
       <div class="text-xs text-slate-500 mt-2"><?= $stats['correctCount'] ?> Correct of <?= $stats['attemptedCount'] ?> Attempted</div>
     </div>
-    <div class="p-5 rounded-2xl bg-white border border-red-100">
+    <div class="tilt-card fade-in-up d1 p-5 rounded-2xl bg-white border border-red-100">
       <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Est. Percentile</div>
       <div class="text-3xl font-extrabold text-amber-600 mt-1"><?= $n($stats['estimatedPercentile']) ?>%ile</div>
       <div class="text-xs text-slate-500 mt-2">All-India Normalized Estimate</div>
     </div>
-    <div class="p-5 rounded-2xl bg-white border border-red-100">
+    <div class="tilt-card fade-in-up d2 p-5 rounded-2xl bg-white border border-red-100">
       <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Attempt Breakdown</div>
       <div class="flex items-center gap-3 mt-2">
         <span class="text-sm font-bold text-emerald-600"><?= $stats['correctCount'] ?> Right</span>
@@ -97,11 +99,11 @@ page_head($attempt['title'] . ' — Scorecard | MasterJee.AI', 'min-h-screen bg-
         <span class="text-sm font-bold text-slate-500"><?= $stats['unattemptedCount'] ?> Skipped</span>
       </div>
       <div class="w-full h-2 rounded-full bg-red-100 mt-3 overflow-hidden flex">
-        <div style="width:<?= round($pct($stats['correctCount']), 2) ?>%" class="bg-emerald-500"></div>
-        <div style="width:<?= round($pct($stats['incorrectCount']), 2) ?>%" class="bg-rose-500"></div>
+        <div style="width:<?= round($pct($stats['correctCount']), 2) ?>%" class="bg-emerald-500 transition-all duration-700"></div>
+        <div style="width:<?= round($pct($stats['incorrectCount']), 2) ?>%" class="bg-rose-500 transition-all duration-700"></div>
       </div>
     </div>
-    <div class="p-5 rounded-2xl bg-white border border-red-100 col-span-2 lg:col-span-1">
+    <div class="tilt-card fade-in-up d3 p-5 rounded-2xl bg-white border border-red-100 col-span-2 lg:col-span-1">
       <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Time Taken</div>
       <div class="text-2xl font-extrabold text-slate-900 mt-1 font-mono"><?= format_clock($stats['totalTimeSpent']) ?></div>
       <div class="text-xs text-slate-500 mt-2">Avg <?= $avgSeconds ?>s per attempted Q</div>
