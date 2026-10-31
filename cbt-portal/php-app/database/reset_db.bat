@@ -19,7 +19,7 @@ echo Importing seed data (presets + demo paper)...
 "%MYSQL%" -u root cbt_portal < "%DIR%seed.sql"
 if errorlevel 1 goto :error
 
-echo Importing ready-made exam papers (RRB NTPC, WBCS, WBJEE, JENPAS-UG, SMFWBEE)...
+echo Importing ready-made exam papers (RRB NTPC, WBCS, WBJEE, JENPAS-UG, SMFWBEE, GNM ^& ANM)...
 "%MYSQL%" -u root cbt_portal < "%DIR%rrb_ntpc.sql"
 if errorlevel 1 goto :error
 "%MYSQL%" -u root cbt_portal < "%DIR%wbcs_prelims.sql"
@@ -29,6 +29,8 @@ if errorlevel 1 goto :error
 "%MYSQL%" -u root cbt_portal < "%DIR%jenpas.sql"
 if errorlevel 1 goto :error
 "%MYSQL%" -u root cbt_portal < "%DIR%smfwbee.sql"
+if errorlevel 1 goto :error
+"%MYSQL%" -u root cbt_portal < "%DIR%gnm_anm.sql"
 if errorlevel 1 goto :error
 
 echo.

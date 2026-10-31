@@ -12,11 +12,11 @@ The React/Vite app in `../src` rebuilt as a server-rendered PHP site backed by M
    every machine ends up with the exact same presets and papers (no duplicate-key errors from
    re-importing over old data).
    Or by hand, in order: `database/schema.sql`, `database/seed.sql`, then each of
-   `rrb_ntpc.sql`, `wbcs_prelims.sql`, `wbjee.sql`, `jenpas.sql`, `smfwbee.sql`
+   `rrb_ntpc.sql`, `wbcs_prelims.sql`, `wbjee.sql`, `jenpas.sql`, `smfwbee.sql`, `gnm_anm.sql`
    (in phpMyAdmin → *Import*, or `C:\xampp\mysql\bin\mysql.exe -u root cbt_portal < database\schema.sql`
    and the same for each file after it — only works on a fresh/empty database).
    This creates the `cbt_portal` database, the exam presets (SSC CGL, IBPS PO, JEE Main, CAT, NEET UG,
-   RRB NTPC, WBCS Prelims, WBJEE, JENPAS-UG, SMFWBEE) and their ready-made demo papers.
+   RRB NTPC, WBCS Prelims, WBJEE, JENPAS-UG, SMFWBEE, GNM & ANM) and their ready-made demo papers.
 4. **Open** <http://localhost/nexuscbt/>. The "Instant demo exam" works immediately.
 
 **Keeping every machine in sync:** `schema.sql`/`seed.sql` and the `database/*.sql` paper files are

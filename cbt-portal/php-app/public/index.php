@@ -89,7 +89,7 @@ page_head('LibertyCBT.Ai — AI Mock Tests for Competitive Exams', 'min-h-screen
           <input type="hidden" name="exam" value="<?= h($b['slug']) ?>">
           <button class="tilt-card w-full h-full p-4 rounded-xl border border-red-100 bg-white hover:border-red-300 text-left transition-all cursor-pointer flex items-start gap-3">
             <span class="w-10 h-10 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center shrink-0">
-              <?= icon(['rrb-ntpc' => 'train-front', 'wbcs-prelims' => 'landmark', 'wbjee' => 'calculator', 'jenpas-ug' => 'stethoscope', 'smfwbee' => 'heart-pulse'][$b['slug']] ?? 'book-open', 'w-5 h-5 text-red-600') ?>
+              <?= icon(['rrb-ntpc' => 'train-front', 'wbcs-prelims' => 'landmark', 'wbjee' => 'calculator', 'jenpas-ug' => 'stethoscope', 'smfwbee' => 'heart-pulse', 'gnm-anm' => 'syringe'][$b['slug']] ?? 'book-open', 'w-5 h-5 text-red-600') ?>
             </span>
             <span>
               <span class="block font-bold text-slate-900 text-sm leading-snug"><?= h($b['title']) ?></span>
