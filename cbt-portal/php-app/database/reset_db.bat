@@ -19,9 +19,20 @@ echo Importing seed data (presets + demo paper)...
 "%MYSQL%" -u root cbt_portal < "%DIR%seed.sql"
 if errorlevel 1 goto :error
 
+echo Importing ready-made exam papers (RRB NTPC, WBCS, WBJEE, JENPAS-UG, SMFWBEE)...
+"%MYSQL%" -u root cbt_portal < "%DIR%rrb_ntpc.sql"
+if errorlevel 1 goto :error
+"%MYSQL%" -u root cbt_portal < "%DIR%wbcs_prelims.sql"
+if errorlevel 1 goto :error
+"%MYSQL%" -u root cbt_portal < "%DIR%wbjee.sql"
+if errorlevel 1 goto :error
+"%MYSQL%" -u root cbt_portal < "%DIR%jenpas.sql"
+if errorlevel 1 goto :error
+"%MYSQL%" -u root cbt_portal < "%DIR%smfwbee.sql"
+if errorlevel 1 goto :error
+
 echo.
-echo Done. cbt_portal now matches schema.sql + seed.sql exactly.
-echo (Optional extra papers: organic_chemistry.sql, neet_biology.sql — import those too if you want them.)
+echo Done. cbt_portal now matches schema.sql + seed.sql + the ready-made papers exactly.
 goto :eof
 
 :error

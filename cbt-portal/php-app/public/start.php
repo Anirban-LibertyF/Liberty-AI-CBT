@@ -10,7 +10,7 @@ check_csrf($_POST['csrf'] ?? null);
 
 $which = (string) ($_POST['exam'] ?? '');
 if ($which !== '' && !ctype_digit($which)) {
-    // a built-in paper, by slug ("demo", "organic", ...)
+    // a built-in paper, by slug ("demo", "rrb-ntpc", ...)
     $exam = Exams::builtin($which) ?? throw new AppError('That test is not available right now.', 404);
     $examId = (int) $exam['id'];
 } else {
