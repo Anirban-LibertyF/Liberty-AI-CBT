@@ -7,11 +7,21 @@ The React/Vite app in `../src` rebuilt as a server-rendered PHP site backed by M
 1. **Copy this folder** into `C:\xampp\htdocs\` under a new name, e.g. `nexuscbt`.
    (`htdocs\cbt-portal` already exists with an older, smaller PHP version — don't overwrite it.)
 2. **Start Apache and MySQL** in the XAMPP control panel.
-3. **Import the database.** In phpMyAdmin → *Import*, run these two files in order:
-   `database/schema.sql`, then `database/seed.sql`
-   (or: `C:\xampp\mysql\bin\mysql.exe -u root < database\schema.sql` and the same for `seed.sql`).
-   This creates the `cbt_portal` database, the 5 exam presets and the 57-question demo paper.
+3. **Import the database.** Easiest: run `database\reset_db.bat` (Windows/XAMPP) — it drops and
+   rebuilds `cbt_portal` from `schema.sql` + `seed.sql` in one go, so every machine ends up with
+   the exact same presets and demo paper (no duplicate-key errors from re-importing over old data).
+   Or by hand, in order: `database/schema.sql`, then `database/seed.sql`
+   (in phpMyAdmin → *Import*, or `C:\xampp\mysql\bin\mysql.exe -u root cbt_portal < database\schema.sql`
+   and the same for `seed.sql` — only works on a fresh/empty database).
+   This creates the `cbt_portal` database, the 5 exam presets (SSC CGL, IBPS PO, JEE Main, CAT, NEET UG)
+   and the 57-question demo paper.
 4. **Open** <http://localhost/nexuscbt/>. The "Instant demo exam" works immediately.
+
+**Keeping every machine in sync:** `schema.sql`/`seed.sql` are the single source of truth for the
+database — they're committed to git and kept in lockstep with the live DB used for development.
+If your local site ever looks different from what's on GitHub (missing/extra presets, old badges),
+it almost always means your local `cbt_portal` has leftover data from an earlier setup. Re-run
+`database\reset_db.bat` after a `git pull` to wipe it and rebuild from the current files exactly.
 
 `config.php` already holds XAMPP's defaults (`root`, empty password, port 3306). Edit it if yours differ.
 
