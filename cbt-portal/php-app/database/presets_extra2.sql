@@ -1,0 +1,62 @@
+-- Extra presets round 2: SSC GD, SSC CPO, RRB Group D, WB Primary TET, plus realistic default question count /
+-- duration / marking and display order for every preset. Import after presets_extra.sql. Safe to re-run.
+USE cbt_portal;
+SET NAMES utf8mb4;
+
+DELETE FROM presets WHERE id = 'SSC_GD';
+INSERT INTO presets (id, name, badge, duration_minutes, positive_marks, negative_marks, default_count, sort_order) VALUES ('SSC_GD', 'SSC GD Constable', 'Govt / Staff Selection', 60, 2, 0.5, 80, 9);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('SSC_GD', 1, 'General Intelligence & Reasoning', 'Analogy, Series, Coding-Decoding, Blood Relations, Direction Sense, Non-Verbal Reasoning', 25);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('SSC_GD', 2, 'General Knowledge & Awareness', 'Static GK, Indian Polity, History, Geography, General Science, Current Affairs', 25);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('SSC_GD', 3, 'Elementary Mathematics', 'Number System, Percentage, Ratio, Average, Profit & Loss, Time & Work, Mensuration', 25);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('SSC_GD', 4, 'English / Hindi Language', 'Error Spotting, Fill in the Blanks, Synonyms & Antonyms, Idioms, Comprehension', 25);
+DELETE FROM presets WHERE id = 'SSC_CPO';
+INSERT INTO presets (id, name, badge, duration_minutes, positive_marks, negative_marks, default_count, sort_order) VALUES ('SSC_CPO', 'SSC CPO Sub-Inspector (Paper I)', 'Govt / Staff Selection', 120, 1, 0.25, 200, 10);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('SSC_CPO', 1, 'General Intelligence & Reasoning', 'Analogy, Classification, Series, Coding-Decoding, Venn Diagrams, Matrix, Non-Verbal Reasoning', 25);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('SSC_CPO', 2, 'General Knowledge & Awareness', 'Static GK, Polity, History, Geography, General Science, Current Affairs', 25);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('SSC_CPO', 3, 'Quantitative Aptitude', 'Percentages, Profit & Loss, Time & Work, Algebra, Geometry, Trigonometry, Data Interpretation', 25);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('SSC_CPO', 4, 'English Comprehension', 'Error Spotting, Cloze Test, Idioms & Phrases, One Word Substitution, Reading Comprehension', 25);
+DELETE FROM presets WHERE id = 'RRB_GROUP_D';
+INSERT INTO presets (id, name, badge, duration_minutes, positive_marks, negative_marks, default_count, sort_order) VALUES ('RRB_GROUP_D', 'RRB Group D', 'Railway Recruitment Board', 90, 1, 0.33, 100, 11);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('RRB_GROUP_D', 1, 'Mathematics', 'Number System, Percentage, Ratio & Proportion, Time & Work, Algebra, Geometry, Mensuration', 25);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('RRB_GROUP_D', 2, 'General Intelligence & Reasoning', 'Analogy, Series, Coding-Decoding, Syllogism, Venn Diagrams, Direction Sense', 30);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('RRB_GROUP_D', 3, 'General Science', 'Physics, Chemistry and Biology up to Class X level, Everyday Science', 25);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('RRB_GROUP_D', 4, 'General Awareness & Current Affairs', 'Indian History, Geography, Polity, Economy, Sports, Current Affairs', 20);
+DELETE FROM presets WHERE id = 'WB_PRIMARY_TET';
+INSERT INTO presets (id, name, badge, duration_minutes, positive_marks, negative_marks, default_count, sort_order) VALUES ('WB_PRIMARY_TET', 'WB Primary TET', 'West Bengal Teacher Eligibility', 150, 1, 0, 150, 12);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('WB_PRIMARY_TET', 1, 'Child Development & Pedagogy', 'Child Development, Learning Theories, Inclusive Education, Teaching Methods, Assessment', 20);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('WB_PRIMARY_TET', 2, 'Bengali Language', 'Grammar, Comprehension, Vocabulary, Pedagogy of Language', 20);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('WB_PRIMARY_TET', 3, 'English Language', 'Grammar, Comprehension, Vocabulary, Pedagogy of English', 20);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('WB_PRIMARY_TET', 4, 'Mathematics', 'Number System, Arithmetic, Geometry, Mensuration, Data Handling, Pedagogy of Maths', 20);
+INSERT INTO preset_sections (preset_id, position, name, topics, weight) VALUES ('WB_PRIMARY_TET', 5, 'Environmental Studies', 'Family & Friends, Food, Water, Shelter, Travel, Environment, Pedagogy of EVS', 20);
+
+UPDATE presets SET default_count = 100, duration_minutes = 60 WHERE id = 'SSC_CGL';
+UPDATE presets SET default_count = 100, duration_minutes = 60 WHERE id = 'IBPS_PO';
+UPDATE presets SET default_count = 75, duration_minutes = 180 WHERE id = 'JEE_MAIN';
+UPDATE presets SET default_count = 66, duration_minutes = 120 WHERE id = 'CAT_MBA';
+UPDATE presets SET default_count = 180, duration_minutes = 180 WHERE id = 'NEET_UG';
+UPDATE presets SET default_count = 100, duration_minutes = 90 WHERE id = 'RRB_NTPC';
+UPDATE presets SET default_count = 200, duration_minutes = 120 WHERE id = 'WBCS_PRE';
+UPDATE presets SET default_count = 155, duration_minutes = 240 WHERE id = 'WBJEE';
+UPDATE presets SET default_count = 100, duration_minutes = 90 WHERE id = 'JENPAS_UG';
+UPDATE presets SET default_count = 100, duration_minutes = 90 WHERE id = 'GNM_ANM';
+
+UPDATE presets SET sort_order = 1 WHERE id = 'SSC_CGL';
+UPDATE presets SET sort_order = 2 WHERE id = 'SSC_CHSL';
+UPDATE presets SET sort_order = 3 WHERE id = 'SSC_MTS';
+UPDATE presets SET sort_order = 4 WHERE id = 'SSC_GD';
+UPDATE presets SET sort_order = 5 WHERE id = 'SSC_CPO';
+UPDATE presets SET sort_order = 6 WHERE id = 'UPSC_CSE';
+UPDATE presets SET sort_order = 7 WHERE id = 'WBPSC_CLERK';
+UPDATE presets SET sort_order = 8 WHERE id = 'WB_POLICE';
+UPDATE presets SET sort_order = 9 WHERE id = 'WB_PRIMARY_TET';
+UPDATE presets SET sort_order = 10 WHERE id = 'IBPS_PO';
+UPDATE presets SET sort_order = 11 WHERE id = 'SBI_CLERK';
+UPDATE presets SET sort_order = 12 WHERE id = 'RRB_NTPC';
+UPDATE presets SET sort_order = 13 WHERE id = 'RRB_GROUP_D';
+UPDATE presets SET sort_order = 14 WHERE id = 'JEE_MAIN';
+UPDATE presets SET sort_order = 15 WHERE id = 'CAT_MBA';
+UPDATE presets SET sort_order = 16 WHERE id = 'NEET_UG';
+UPDATE presets SET sort_order = 17 WHERE id = 'WBCS_PRE';
+UPDATE presets SET sort_order = 18 WHERE id = 'WBJEE';
+UPDATE presets SET sort_order = 19 WHERE id = 'JENPAS_UG';
+UPDATE presets SET sort_order = 20 WHERE id = 'GNM_ANM';

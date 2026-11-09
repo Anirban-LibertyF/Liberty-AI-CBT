@@ -121,8 +121,8 @@ final class Exams
                 ? (float) $in[$k]
                 : throw new AppError("$label must be between $min and $max.");
 
-        $total = (int) $num('total', 5, 120, 'Total questions');
-        $duration = (int) $num('duration', 10, 180, 'Duration');
+        $total = (int) $num('total', 5, 200, 'Total questions');
+        $duration = (int) $num('duration', 10, 240, 'Duration');
         $positive = $num('positive', 0.25, 20, 'Correct marks');
         $negative = $num('negative', 0, 20, 'Negative marks');
 
@@ -349,12 +349,17 @@ final class Exams
                 $ask = $round === 0 ? $want : $want - count($fresh) + 4;
                 $payload = self::batchPayload($b, $ask, $history, array_merge($newStems, $history['stems']));
                 $parsed = json_decode(Gemini::generate($payload), true);
+                $cleans = [];
                 foreach (is_array($parsed['questions'] ?? null) ? $parsed['questions'] : [] as $q) {
                     $clean = self::cleanQuestion($q, $b['section_name'], $mode, (bool) $b['include_diagrams']);
-                    if ($clean === null) {
-                        continue; // malformed (not 4 options / bad key / no text): skip rather than ship a wrong answer key
+                    if ($clean !== null) { // malformed (not 4 options / bad key / no text): skip rather than ship a wrong answer key
+                        $cleans[] = $clean;
                     }
-                    $sawValid = true;
+                }
+                $sawValid = $sawValid || $cleans !== [];
+                // Independent second opinion: a separate pass solves each question blind and any question whose
+                // answer disagrees with the key (or where no option is right) is thrown away and re-requested.
+                foreach (self::verifyAnswers($cleans) as $clean) {
                     $set = Freshness::tokens($clean['text']);
                     array_unshift($newStems, $clean['text']);
                     if (Freshness::maxSimilarity($set, array_merge($siblings, $freshSets)) >= Freshness::SAME) {
@@ -439,6 +444,75 @@ final class Exams
             $pdo->prepare("UPDATE exam_batches SET status = 'failed' WHERE id = ?")->execute([$batchId]);
             throw $e;
         }
+    }
+
+    /**
+     * Re-solves every question WITHOUT showing the answer key and keeps only those where the independent
+     * solution picks the same option. If the checker itself is unavailable the questions pass unchanged,
+     * so a hiccup never blocks test creation.
+     *
+     * @param list<array> $cleans
+     * @return list<array>
+     */
+    private static function verifyAnswers(array $cleans): array
+    {
+        if (!$cleans) {
+            return [];
+        }
+        $items = [];
+        foreach ($cleans as $i => $c) {
+            $item = ['id' => $i, 'question' => $c['text'], 'options' => $c['options']];
+            if ($c['svg'] !== null) {
+                $item['figure_svg'] = mb_substr(strip_tags((string) $c['svg'], '<text><tspan>'), 0, 3000);
+            }
+            $items[] = $item;
+        }
+        $system = 'You are an expert examiner checking an exam paper. For each multiple-choice question, solve it yourself from scratch, '
+            . 'carefully and step by step, ignoring any assumptions. Then report which option (A, B, C or D) is correct. '
+            . 'If NONE of the four options is correct, or two options are equally correct, or the question is ambiguous or unanswerable, answer "X".';
+        $payload = [
+            'contents'          => [['parts' => [['text' => "Solve these questions:\n" . json_encode($items, JSON_UNESCAPED_UNICODE)]]]],
+            'systemInstruction' => ['parts' => [['text' => $system]]],
+            'generationConfig'  => [
+                'responseMimeType' => 'application/json',
+                'temperature'      => 0,
+                'responseSchema'   => [
+                    'type'  => 'ARRAY',
+                    'items' => [
+                        'type'       => 'OBJECT',
+                        'properties' => [
+                            'id'     => ['type' => 'INTEGER'],
+                            'answer' => ['type' => 'STRING', 'enum' => ['A', 'B', 'C', 'D', 'X']],
+                        ],
+                        'required'         => ['id', 'answer'],
+                        'propertyOrdering' => ['id', 'answer'],
+                    ],
+                ],
+            ],
+        ];
+        try {
+            $res = json_decode(Gemini::generate($payload, 2), true);
+        } catch (Throwable $e) {
+            error_log('Answer check skipped: ' . $e->getMessage());
+            return $cleans;
+        }
+        if (!is_array($res)) {
+            return $cleans;
+        }
+        $answers = [];
+        foreach ($res as $r) {
+            if (is_array($r) && isset($r['id'], $r['answer'])) {
+                $answers[(int) $r['id']] = (string) $r['answer'];
+            }
+        }
+        $kept = [];
+        foreach ($cleans as $i => $c) {
+            // a question the checker did not return an answer for is kept (checker glitch), a disagreement is dropped
+            if (!isset($answers[$i]) || $answers[$i] === $c['correct']) {
+                $kept[] = $c;
+            }
+        }
+        return $kept;
     }
 
     private static function batchPayload(array $b, int $want, array $history, array $avoidStems): array

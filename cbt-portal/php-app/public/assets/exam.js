@@ -24,6 +24,41 @@
   // The first question is visited on entry. (Server already marked it NOT_ANSWERED at start.)
   draft = qs[0]?.selected ?? null;
 
+  // ---------------------------------------------------------------- language (English / বাংলা)
+
+  // The reader can flip any question between English and Bengali. Bengali versions are written on
+  // first use by the server (and cached there); the choice is remembered for the rest of the paper.
+  let lang = 'en';
+  try { lang = localStorage.getItem('cbt_lang') === 'bn' ? 'bn' : 'en'; } catch { /* storage blocked */ }
+  const bn = {}; // question id -> { html, options: { A: html, ... } }
+  const bnPending = new Set();
+  let bnFailed = false;
+
+  const bnReady = (q) => lang === 'bn' && !!bn[q.id];
+  const qHtml = (q) => (bnReady(q) ? bn[q.id].html : q.html);
+  const optHtml = (q, o) => (bnReady(q) && bn[q.id].options[o.id] ? bn[q.id].options[o.id] : o.html);
+
+  /** Fetches Bengali for the current question first, then the next few, in small batches. */
+  async function loadBengali() {
+    if (lang !== 'bn') return;
+    const want = [];
+    for (let i = idx; i < Math.min(qs.length, idx + 6); i++) {
+      if (!bn[qs[i].id] && !bnPending.has(qs[i].id)) want.push(qs[i].id);
+    }
+    if (!want.length) return;
+    want.forEach((id) => bnPending.add(id));
+    bnFailed = false;
+    try {
+      const r = await api('api/translate.php', { attempt_id: E.attemptId, question_ids: want });
+      Object.assign(bn, r.translations);
+    } catch (err) {
+      bnFailed = true;
+      notify({ title: 'Bengali is not available right now', message: err.message, type: 'warning' });
+    }
+    want.forEach((id) => bnPending.delete(id));
+    render();
+  }
+
   // ---------------------------------------------------------------- server sync
 
   const queue = []; // serialise requests so saves land in order
@@ -68,6 +103,7 @@
     draft = qs[idx].selected;
     unsent = 0;
     render();
+    loadBengali();
   }
 
   function saveAndNext() {
@@ -117,7 +153,7 @@
       window.location.href = res.redirect;
     } catch (err) {
       submitting = false;
-      alert(err.message);
+      notify({ title: 'Could not submit your exam', message: err.message, type: 'error' });
       render();
     }
   }
@@ -261,12 +297,17 @@
             <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${diffCls}">${esc(q.difficulty)}</span>
           </div>
           <div class="flex items-center gap-3 text-xs text-slate-500">
+            <span class="font-semibold text-slate-600">View in:</span>
+            <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold" role="group" aria-label="Question language">
+              <button type="button" data-act="lang" data-lang="en" class="px-2.5 py-1 rounded-md cursor-pointer ${lang === 'en' ? 'bg-red-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}">English</button>
+              <button type="button" data-act="lang" data-lang="bn" class="px-2.5 py-1 rounded-md cursor-pointer ${lang === 'bn' ? 'bg-red-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}">বাংলা</button>
+            </div>
             <span class="flex items-center gap-1 font-mono">${ico('timer', 'w-3.5 h-3.5 text-slate-400')}<span id="q-time">Time on this Q: ${q.time}s</span></span>
           </div>
         </div>
 
         <div id="q-scroll" class="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 max-w-4xl">
-          <div class="text-base sm:text-lg font-medium text-slate-900 leading-relaxed whitespace-pre-line">${q.html}</div>
+          <div class="text-base sm:text-lg font-medium text-slate-900 leading-relaxed whitespace-pre-line">${lang === 'bn' && !bnReady(q) && !bnFailed ? `<span class="text-sm text-slate-400">বাংলায় অনুবাদ হচ্ছে… (translating)</span><br>` : ''}${qHtml(q)}</div>
           ${diagramCard(q, true)}
           <div class="space-y-3 pt-2">
             ${q.options
@@ -274,7 +315,7 @@
                 const on = draft === o.id;
                 return `<div data-act="pick" data-opt="${o.id}" class="p-4 rounded-xl border-2 transition-all flex items-start gap-3.5 cursor-pointer ${on ? 'border-indigo-600 bg-indigo-50/70 shadow-sm' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}">
                   <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 border ${on ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300'}">${o.id}</div>
-                  <div class="text-sm sm:text-base text-slate-800 font-medium leading-snug pt-0.5">${o.html}</div></div>`;
+                  <div class="text-sm sm:text-base text-slate-800 font-medium leading-snug pt-0.5">${optHtml(q, o)}</div></div>`;
               })
               .join('')}
           </div>
@@ -295,8 +336,12 @@
       <aside class="${mobilePaletteOpen ? 'fixed inset-y-0 right-0 z-40 flex' : 'hidden lg:flex'} w-80 bg-slate-50 border-l border-slate-300 flex-col shrink-0">
         <div class="p-3.5 bg-white border-b border-slate-200 flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm">ST</div>
-            <div><div class="text-xs font-bold text-slate-800">Candidate Attempt</div><div class="text-[11px] text-slate-500">Roll No: ${esc(E.roll)}</div></div>
+            <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm shrink-0">${esc((E.candidate.name || '?').trim().charAt(0).toUpperCase())}</div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-slate-800 truncate" title="${esc(E.candidate.name)}">${esc(E.candidate.name)}</div>
+              <div class="text-[11px] text-slate-500 truncate" title="${esc(E.candidate.email)}">${esc(E.candidate.email)}</div>
+              <div class="text-[11px] text-slate-500"><span class="font-semibold text-red-700">Attempt #${E.candidate.attemptNo}</span></div>
+            </div>
           </div>
           ${mobilePaletteOpen ? `<button data-act="toggle-palette" class="lg:hidden p-1.5 rounded-lg bg-slate-100 text-slate-600">${ico('x', 'w-4 h-4')}</button>` : ''}
         </div>
@@ -418,6 +463,13 @@
         if (first !== -1) goTo(first);
         break;
       }
+      case 'lang': {
+        lang = el.dataset.lang === 'bn' ? 'bn' : 'en';
+        try { localStorage.setItem('cbt_lang', lang); } catch { /* ignore */ }
+        render();
+        loadBengali();
+        break;
+      }
       case 'toggle-palette':
         mobilePaletteOpen = !mobilePaletteOpen;
         render();
@@ -453,4 +505,5 @@
   });
 
   render();
+  loadBengali();
 })();

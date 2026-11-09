@@ -23,14 +23,11 @@ $n = fn ($v) => h(round((float) $v, 2) + 0);
 $pct = fn ($part) => $stats['totalQuestions'] > 0 ? $part / $stats['totalQuestions'] * 100 : 0;
 $avgSeconds = (int) round($stats['totalTimeSpent'] / max(1, $stats['attemptedCount']));
 
-page_head($attempt['title'] . ' — Scorecard | LibertyCBT.Ai', 'min-h-screen bg-red-50 text-slate-900 pb-16');
+page_head($attempt['title'] . ' — Scorecard | MasterjeeCBT.Ai', 'min-h-screen bg-red-50 text-slate-900 pb-16');
 ?>
 <header class="border-b border-red-100 bg-white sticky top-0 z-30 print:hidden">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <div class="logo-3d w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">LC</div>
-      <h1 class="text-lg sm:text-xl font-bold tracking-tight"><span class="brand-gradient">LibertyCBT</span><span class="text-slate-900">.Ai</span></h1>
-    </div>
+    <?= brand_lockup() ?>
     <div class="flex items-center gap-3">
       <a href="history.php" class="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-slate-700 text-xs sm:text-sm font-semibold border border-red-200 flex items-center gap-2">
         <?= icon('history', 'w-4 h-4') ?><span>My Test</span>

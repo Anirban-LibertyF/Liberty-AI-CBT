@@ -14,7 +14,7 @@ function page_head(string $title, string $bodyClass): void
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= h($title) ?></title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23dc2626'/><text x='32' y='42' font-family='Arial,Helvetica,sans-serif' font-size='24' font-weight='bold' fill='white' text-anchor='middle'>LC</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="<?= h(brand_favicon()) ?>">
   <script src="https://cdn.tailwindcss.com/3.4.4"></script>
   <script>
     // Red & white theme: the accent colours used in the markup (indigo, blue) are remapped to Tailwind's red scale.
@@ -28,7 +28,7 @@ function page_head(string $title, string $bodyClass): void
     .math-rendered { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; }
     svg[data-lucide], .lucide { flex-shrink: 0; }
 
-    /* ---------- LibertyCBT.Ai: brand gradient, 3D hover & transition polish ---------- */
+    /* ---------- MasterjeeCBT.Ai: brand gradient, 3D hover & transition polish ---------- */
     .brand-gradient {
       background-image: linear-gradient(90deg, #dc2626, #f97316, #dc2626);
       background-size: 200% auto;
@@ -100,31 +100,132 @@ function site_nav(string $extraHtml = ''): void
     account_menu();
 }
 
-/** Account avatar + name with a dropdown (dummy demo user — no real auth in this app). */
+/** The MasterjeeCBT.Ai mark: a bold "M" (peaks = mastery) with a tick-dot, on the brand gradient. */
+function brand_mark(int $px = 40): string
+{
+    static $n = 0;
+    $id = 'bm' . (++$n);
+    return '<svg class="logo-3d shrink-0 rounded-xl shadow-lg shadow-red-600/25" width="' . $px . '" height="' . $px . '" viewBox="0 0 48 48" role="img" aria-label="MasterjeeCBT.Ai">'
+        . '<defs><linearGradient id="' . $id . '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dc2626"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs>'
+        . '<rect width="48" height="48" rx="12" fill="url(#' . $id . ')"/>'
+        . '<path d="M12.5 33V15.5L24 27.5l11.5-12V33" fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>'
+        . '<circle cx="24" cy="36.5" r="2.1" fill="#fff" fill-opacity=".92"/></svg>';
+}
+
+function brand_favicon(): string
+{
+    $svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#dc2626'/><stop offset='1' stop-color='#f97316'/></linearGradient></defs><rect width='48' height='48' rx='12' fill='url(#g)'/><path d='M12.5 33V15.5L24 27.5l11.5-12V33' fill='none' stroke='white' stroke-width='4.2' stroke-linecap='round' stroke-linejoin='round'/><circle cx='24' cy='36.5' r='2.1' fill='white'/></svg>";
+    return 'data:image/svg+xml,' . rawurlencode($svg);
+}
+
+/** Logo + wordmark (+ optional tagline) used in every page header. */
+function brand_lockup(string $tagline = ''): string
+{
+    return '<a href="index.php" class="flex items-center gap-3 no-underline">' . brand_mark(40)
+        . '<span><span class="block text-lg sm:text-xl font-extrabold tracking-tight leading-tight"><span class="brand-gradient">Masterjee</span><span class="text-slate-900">CBT.Ai</span></span>'
+        . ($tagline !== '' ? '<span class="block text-xs text-slate-500">' . h($tagline) . '</span>' : '')
+        . '</span></a>';
+}
+
+/** Header account area: Log in / Register buttons, or the signed-in user with a dropdown. */
 function account_menu(): void
 {
+    $u = Auth::user();
     ?>
-    <div class="relative" id="account-menu">
+    <div class="relative" id="account-slot">
+    <?php if (!$u): ?>
+      <div class="flex items-center gap-2">
+        <button type="button" data-auth-open="login" class="px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-red-100 transition-colors cursor-pointer">Log in</button>
+        <button type="button" data-auth-open="register" class="px-3.5 py-2 rounded-xl text-sm font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors cursor-pointer">Register</button>
+      </div>
+    <?php else: ?>
       <button type="button" id="account-btn" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 border border-red-100 text-sm font-semibold text-slate-700 transition-all cursor-pointer">
-        <span class="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-bold shrink-0"><?= icon('user', 'w-4 h-4') ?></span>
-        <span>Hi, Prasenjit</span>
+        <span class="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-bold shrink-0"><?= h(mb_strtoupper(mb_substr($u['name'], 0, 1))) ?></span>
+        <span class="max-w-[9rem] truncate">Hi, <?= h(explode(' ', $u['name'])[0]) ?></span>
         <?= icon('chevron-down', 'w-3.5 h-3.5 text-slate-500') ?>
       </button>
-      <div id="account-dropdown" class="hidden absolute right-0 mt-2 w-44 rounded-xl bg-white border border-red-100 shadow-xl py-1.5 z-40">
+      <div id="account-dropdown" class="hidden absolute right-0 mt-2 w-60 rounded-xl bg-white border border-red-100 shadow-xl py-1.5 z-40">
+        <div class="px-3.5 py-2 border-b border-red-50">
+          <div class="text-sm font-semibold text-slate-900 truncate"><?= h($u['name']) ?></div>
+          <div class="text-xs text-slate-500 truncate"><?= h($u['email']) ?></div>
+        </div>
         <button type="button" id="account-logout" class="w-full flex items-center gap-2 px-3.5 py-2 text-sm text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer">
           <?= icon('log-out', 'w-4 h-4') ?><span>Logout</span>
         </button>
       </div>
+    <?php endif; ?>
     </div>
-    <script>
-      (() => {
-        const btn = document.getElementById('account-btn');
-        const dd = document.getElementById('account-dropdown');
-        btn.addEventListener('click', (e) => { e.stopPropagation(); dd.classList.toggle('hidden'); });
-        document.addEventListener('click', () => dd.classList.add('hidden'));
-        document.getElementById('account-logout').addEventListener('click', () => alert('This is a demo account — logout is not wired up yet.'));
-      })();
-    </script>
+    <?php
+}
+
+/** Login / Register modal (minimal). Behaviour lives in assets/auth.js. */
+function auth_modal(): void
+{
+    $field = 'w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition';
+    $label = 'block text-xs font-medium text-slate-600 mb-1.5';
+    ?>
+<div id="auth-modal" class="hidden fixed inset-0 z-[60] items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+  <div class="relative w-full max-w-[400px] bg-white rounded-2xl shadow-2xl shadow-slate-900/20 border border-slate-100 p-6 sm:p-7 max-h-[94vh] overflow-y-auto">
+    <button type="button" id="auth-close" aria-label="Close" class="absolute top-3.5 right-3.5 w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center cursor-pointer"><?= icon('x', 'w-4 h-4') ?></button>
+    <div class="flex flex-col items-center text-center mb-5">
+      <?= brand_mark(44) ?>
+      <h2 id="auth-title" class="mt-3 text-lg font-bold text-slate-900">Welcome to <span class="brand-gradient">Masterjee</span>CBT.Ai</h2>
+      <p id="auth-sub" class="text-xs text-slate-500 mt-0.5">Log in to start your test</p>
+    </div>
+
+    <div class="grid grid-cols-2 p-1 mb-5 rounded-xl bg-slate-100 text-sm font-semibold" role="tablist">
+      <button type="button" data-auth-tab="login" class="py-2 rounded-lg cursor-pointer">Log in</button>
+      <button type="button" data-auth-tab="register" class="py-2 rounded-lg cursor-pointer">Register</button>
+    </div>
+
+    <p id="auth-error" class="hidden mb-4 px-3 py-2 rounded-lg bg-rose-50 border border-rose-100 text-rose-700 text-xs" role="alert"></p>
+
+    <form id="auth-login" class="space-y-4" novalidate>
+      <div><label class="<?= $label ?>" for="li-id">Email or mobile number</label>
+        <input id="li-id" name="identifier" type="text" autocomplete="username" class="<?= $field ?>" placeholder="you@example.com"></div>
+      <div><label class="<?= $label ?>" for="li-pw">Password</label>
+        <div class="relative"><input id="li-pw" name="password" type="password" autocomplete="current-password" class="<?= $field ?> pr-10" placeholder="Your password">
+          <button type="button" data-toggle-pw class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer" aria-label="Show password"><?= icon('eye', 'w-4 h-4') ?></button></div></div>
+      <button type="submit" class="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-bold shadow-md shadow-red-600/20 cursor-pointer disabled:opacity-60">Log in</button>
+      <p class="text-center text-xs text-slate-500">New here? <button type="button" data-auth-tab="register" class="font-semibold text-red-600 hover:underline cursor-pointer">Create an account</button></p>
+    </form>
+
+    <form id="auth-register" class="hidden space-y-3.5" novalidate>
+      <div><label class="<?= $label ?>" for="rg-name">Full name</label>
+        <input id="rg-name" name="name" type="text" autocomplete="name" maxlength="80" class="<?= $field ?>" placeholder="Your name"></div>
+      <div><label class="<?= $label ?>" for="rg-phone">Mobile number</label>
+        <div class="flex gap-2">
+          <select id="rg-cc" aria-label="Country code" class="shrink-0 w-[5.5rem] px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition">
+            <option value="+91" selected>🇮🇳 +91</option>
+          </select>
+          <input id="rg-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="10" class="<?= $field ?>" placeholder="10-digit Indian mobile number">
+        </div>
+        <p class="mt-1 text-[11px] text-slate-400">Indian mobile numbers only (starts with 6, 7, 8 or 9).</p>
+      </div>
+      <div><label class="<?= $label ?>" for="rg-email">Email</label>
+        <input id="rg-email" name="email" type="email" autocomplete="email" class="<?= $field ?>" placeholder="you@example.com"></div>
+      <div><label class="<?= $label ?>" for="rg-pw">Create password</label>
+        <div class="relative"><input id="rg-pw" name="password" type="password" autocomplete="new-password" maxlength="200" class="<?= $field ?> pr-10" placeholder="Min 8 characters">
+          <button type="button" data-toggle-pw class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer" aria-label="Show password"><?= icon('eye', 'w-4 h-4') ?></button></div>
+        <div class="mt-2 flex items-center gap-2" aria-live="polite">
+          <div class="flex-1 grid grid-cols-3 gap-1.5"><span class="pw-bar h-1.5 rounded-full bg-slate-200 transition-colors"></span><span class="pw-bar h-1.5 rounded-full bg-slate-200 transition-colors"></span><span class="pw-bar h-1.5 rounded-full bg-slate-200 transition-colors"></span></div>
+          <span id="pw-label" class="text-[11px] font-semibold w-14 text-right text-slate-400">&nbsp;</span>
+        </div>
+        <ul id="pw-rules" class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-slate-500">
+          <li data-rule="len">8+ characters</li><li data-rule="upper">1 capital letter</li>
+          <li data-rule="digit">1 digit</li><li data-rule="special">1 special character</li>
+        </ul>
+      </div>
+      <div><label class="<?= $label ?>" for="rg-pw2">Confirm password</label>
+        <div class="relative"><input id="rg-pw2" name="confirm" type="password" autocomplete="new-password" maxlength="200" class="<?= $field ?> pr-10" placeholder="Re-enter your password">
+          <button type="button" data-toggle-pw class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer" aria-label="Show password"><?= icon('eye', 'w-4 h-4') ?></button></div>
+        <p id="pw-match" class="mt-1 text-[11px] h-4"></p>
+      </div>
+      <button type="submit" class="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-bold shadow-md shadow-red-600/20 cursor-pointer disabled:opacity-60">Create account</button>
+      <p class="text-center text-xs text-slate-500">Already registered? <button type="button" data-auth-tab="login" class="font-semibold text-red-600 hover:underline cursor-pointer">Log in</button></p>
+    </form>
+  </div>
+</div>
     <?php
 }
 
@@ -132,8 +233,10 @@ function account_menu(): void
 function page_foot(array $scripts = []): void
 {
     ?>
-<script>window.CSRF = <?= js_json(csrf_token()) ?>;</script>
+<script>window.CSRF = <?= js_json(csrf_token()) ?>; window.USER = <?= js_json(Auth::user() ? ['name' => Auth::user()['name']] : null) ?>;</script>
+<?php if (!Auth::user()) { auth_modal(); } ?>
 <script src="assets/common.js"></script>
+<script src="assets/auth.js"></script>
 <?php foreach ($scripts as $src): ?>
 <script src="<?= h($src) ?>"></script>
 <?php endforeach; ?>

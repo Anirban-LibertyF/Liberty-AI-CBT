@@ -4,6 +4,7 @@ define('IS_API', true);
 require __DIR__ . '/../../src/bootstrap.php';
 
 $in = api_post();
+Auth::require();
 if (!Gemini::isConfigured()) {
     throw new AppError('AI test creation is not available right now. You can still take a ready-made mock test.', 503);
 }

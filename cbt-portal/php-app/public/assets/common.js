@@ -61,3 +61,46 @@ window.ico = (name, cls = 'w-4 h-4') => `<i data-lucide="${name}" class="${cls}"
     .observe(document.body, { childList: true, subtree: true });
   document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('.tilt-card').forEach(bind));
 })();
+
+/**
+ * App-wide popup for alerts and errors (replaces inline banners and browser alert()).
+ *   notify({ title, message, type: 'error' | 'warning' | 'info' | 'success', button: 'OK' })
+ * Returns a promise that resolves when the popup is dismissed.
+ */
+window.notify = function notify({ title = 'Notice', message = '', type = 'error', button = 'OK' } = {}) {
+  const look = {
+    error: ['circle-alert', 'bg-rose-50 text-rose-600 ring-rose-100'],
+    warning: ['triangle-alert', 'bg-amber-50 text-amber-600 ring-amber-100'],
+    info: ['info', 'bg-sky-50 text-sky-600 ring-sky-100'],
+    success: ['circle-check', 'bg-emerald-50 text-emerald-600 ring-emerald-100'],
+  }[type] || ['circle-alert', 'bg-rose-50 text-rose-600 ring-rose-100'];
+  return new Promise((resolve) => {
+    const prev = document.activeElement;
+    const wrap = document.createElement('div');
+    wrap.className = 'fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/45 backdrop-blur-sm';
+    wrap.setAttribute('role', 'alertdialog');
+    wrap.setAttribute('aria-modal', 'true');
+    wrap.innerHTML = `
+      <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl shadow-slate-900/25 border border-slate-100 p-6 text-center" style="animation: fade-in-up .25s ease both">
+        <div class="mx-auto w-12 h-12 rounded-full ring-8 flex items-center justify-center ${look[1]}">${ico(look[0], 'w-6 h-6')}</div>
+        <h3 class="mt-4 text-base font-bold text-slate-900">${esc(title)}</h3>
+        <p class="mt-1.5 text-sm text-slate-600 leading-relaxed whitespace-pre-line">${esc(message)}</p>
+        <button type="button" class="mt-5 w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-bold shadow-md shadow-red-600/20 cursor-pointer">${esc(button)}</button>
+      </div>`;
+    const close = () => {
+      document.removeEventListener('keydown', onKey, true);
+      wrap.remove();
+      prev && prev.focus && prev.focus();
+      resolve();
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); close(); }
+    };
+    document.addEventListener('keydown', onKey, true);
+    wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
+    wrap.querySelector('button').addEventListener('click', close);
+    document.body.appendChild(wrap);
+    window.refreshIcons();
+    wrap.querySelector('button').focus();
+  });
+};

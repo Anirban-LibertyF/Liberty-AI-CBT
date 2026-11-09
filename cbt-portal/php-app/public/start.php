@@ -12,8 +12,12 @@ $which = (string) ($_POST['exam'] ?? '');
 if ($which !== '' && !ctype_digit($which)) {
     // a built-in paper, by slug ("demo", "rrb-ntpc", ...)
     $exam = Exams::builtin($which) ?? throw new AppError('That test is not available right now.', 404);
+    if ($which !== 'demo') {
+        Auth::require(); // only the free demo paper can be taken without an account
+    }
     $examId = (int) $exam['id'];
 } else {
+    Auth::require();
     $examId = (int) $which;
     if (!owns('exam', $examId)) {
         throw new AppError('Exam not found.', 404);

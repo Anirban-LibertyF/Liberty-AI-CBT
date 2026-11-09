@@ -8,18 +8,12 @@ $demoCount = (int) ($demo['question_count'] ?? 0);
 $aiReady = Gemini::isConfigured();
 $first = $presets[0] ?? null;
 
-page_head('LibertyCBT.Ai — AI Mock Tests for Competitive Exams', 'min-h-screen bg-red-50 text-slate-900');
+page_head('MasterjeeCBT.Ai — AI Mock Tests for Competitive Exams', 'min-h-screen bg-red-50 text-slate-900');
 ?>
 <div class="min-h-screen flex flex-col">
   <header class="border-b border-red-100 bg-white backdrop-blur-md sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="logo-3d w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">LC</div>
-        <div>
-          <h1 class="text-lg sm:text-xl font-bold tracking-tight"><span class="brand-gradient">LibertyCBT</span><span class="text-slate-900">.Ai</span></h1>
-          <p class="text-xs text-slate-500">AI mock tests for JEE, NEET, SSC, Banking, CAT and more</p>
-        </div>
-      </div>
+      <?= brand_lockup('AI mock tests for JEE, NEET, SSC, Banking, CAT and more') ?>
       <div class="flex items-center gap-3">
         <?php site_nav('<a href="history.php" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-100 hover:bg-red-200 text-slate-700 border border-red-200 text-sm font-semibold transition-all"><i data-lucide="history" class="w-4 h-4 text-red-600"></i><span>My Test</span></a>'); ?>
       </div>
@@ -71,7 +65,6 @@ page_head('LibertyCBT.Ai — AI Mock Tests for Competitive Exams', 'min-h-screen
     </div>
     <?php endif; ?>
 
-    <div id="gen-error" class="hidden mb-6 p-4 rounded-xl bg-rose-50 border border-rose-500/40 text-rose-800 text-sm"></div>
 
     <?php $readyMade = array_values(array_filter(Exams::builtins(), fn ($b) => $b['slug'] !== 'demo')); ?>
     <?php if ($readyMade): ?>
@@ -89,7 +82,7 @@ page_head('LibertyCBT.Ai — AI Mock Tests for Competitive Exams', 'min-h-screen
           <input type="hidden" name="exam" value="<?= h($b['slug']) ?>">
           <button class="tilt-card w-full h-full p-4 rounded-xl border border-red-100 bg-white hover:border-red-300 text-left transition-all cursor-pointer flex items-start gap-3">
             <span class="w-10 h-10 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center shrink-0">
-              <?= icon(['rrb-ntpc' => 'train-front', 'wbcs-prelims' => 'landmark', 'wbjee' => 'calculator', 'jenpas-ug' => 'stethoscope', 'smfwbee' => 'heart-pulse', 'gnm-anm' => 'syringe'][$b['slug']] ?? 'book-open', 'w-5 h-5 text-red-600') ?>
+              <?= icon(['rrb-ntpc' => 'train-front', 'wbcs-prelims' => 'landmark', 'wbjee' => 'calculator', 'jenpas-ug' => 'stethoscope', 'smfwbee' => 'heart-pulse', 'gnm-anm' => 'syringe', 'wbpsc-clerkship' => 'clipboard-list'][$b['slug']] ?? 'book-open', 'w-5 h-5 text-red-600') ?>
             </span>
             <span>
               <span class="block font-bold text-slate-900 text-sm leading-snug"><?= h($b['title']) ?></span>
@@ -123,43 +116,6 @@ page_head('LibertyCBT.Ai — AI Mock Tests for Competitive Exams', 'min-h-screen
       </div>
     </div>
 
-    <div class="fade-in-up d1 mb-8 rounded-2xl bg-white border border-indigo-500/30 p-5 sm:p-6">
-      <div class="flex items-center justify-between mb-1">
-        <span class="text-sm font-semibold uppercase tracking-wider text-slate-800 flex items-center gap-2">
-          <?= icon('target', 'w-4 h-4 text-red-600') ?> Or: practice ONE subject &amp; topic only
-        </span>
-      </div>
-      <p class="text-xs text-slate-700 mb-4">Pick a subject and a specific topic (or type your own) for a focused, single-topic test — skips the full multi-subject blueprint below.</p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-        <div>
-          <label for="qt-subject" class="block text-xs font-medium text-slate-500 mb-1.5">Subject</label>
-          <input id="qt-subject" type="text" list="subject-catalog" placeholder="e.g. Physics, or type your own"
-            class="w-full px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
-        </div>
-        <div>
-          <label for="qt-topic" class="block text-xs font-medium text-slate-500 mb-1.5">Specific topic</label>
-          <input id="qt-topic" type="text" list="qt-topic-options" placeholder="e.g. Rotational Mechanics, or type your own"
-            class="w-full px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
-          <datalist id="qt-topic-options"></datalist>
-        </div>
-        <div>
-          <label for="qt-count" class="block text-xs font-medium text-slate-500 mb-1.5">Questions</label>
-          <select id="qt-count" class="w-full px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
-            <option value="10">10</option><option value="20" selected>20</option><option value="30">30</option><option value="50">50</option>
-          </select>
-        </div>
-        <div>
-          <label for="qt-duration" class="block text-xs font-medium text-slate-500 mb-1.5">Duration (minutes)</label>
-          <input id="qt-duration" type="number" min="5" max="180" value="30" placeholder="e.g. 30"
-            class="w-full px-3 py-2.5 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
-        </div>
-        <button type="button" id="qt-launch" <?= $aiReady ? '' : 'disabled title="AI test creation is not available right now"' ?>
-          class="w-full py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-          <?= icon('sparkles', 'w-4 h-4') ?><span>Create Topic-wise Test</span>
-        </button>
-      </div>
-    </div>
-
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <div class="fade-in-up d2 lg:col-span-5 bg-white border border-red-100 rounded-2xl p-5 sm:p-6 space-y-5 h-fit">
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2 border-b border-red-100 pb-3">
@@ -181,12 +137,16 @@ page_head('LibertyCBT.Ai — AI Mock Tests for Competitive Exams', 'min-h-screen
             </button>
             <?php endforeach; ?>
           </div>
+          <div class="mt-2 flex items-center gap-2">
+            <label for="f-total" class="text-xs font-medium text-slate-500">Or exact number (5–200):</label>
+            <input id="f-total" type="number" min="5" max="200" class="w-24 px-3 py-1.5 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm">
+          </div>
         </div>
 
         <div class="grid grid-cols-3 gap-3">
           <div>
             <label for="f-duration" class="block text-xs font-medium text-slate-500 mb-1.5">Time (minutes)</label>
-            <input id="f-duration" type="number" min="10" max="180" class="w-full px-3 py-2 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm">
+            <input id="f-duration" type="number" min="10" max="240" class="w-full px-3 py-2 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm">
           </div>
           <div>
             <label for="f-positive" class="block text-xs font-medium text-emerald-600 mb-1.5">Marks for correct (+)</label>
@@ -240,6 +200,48 @@ page_head('LibertyCBT.Ai — AI Mock Tests for Competitive Exams', 'min-h-screen
             <?= icon('sparkles', 'w-4 h-4') ?><span>Create My Test</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <div class="fade-in-up d3 mt-10 mb-4 flex items-center gap-4" aria-hidden="true">
+      <div class="flex-1 h-px bg-gradient-to-r from-transparent to-red-300"></div>
+      <span class="px-4 py-1 rounded-full bg-red-600 text-white text-xs font-extrabold tracking-widest shadow-md shadow-red-600/30">OR</span>
+      <div class="flex-1 h-px bg-gradient-to-l from-transparent to-red-300"></div>
+    </div>
+    <div class="fade-in-up d3 mb-8 rounded-2xl bg-gradient-to-br from-red-50 via-white to-indigo-50 border-2 border-red-500 ring-4 ring-red-500/10 shadow-xl shadow-red-600/10 p-5 sm:p-6">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-base sm:text-lg font-extrabold uppercase tracking-wider text-red-700 flex items-center gap-2">
+          <?= icon('target', 'w-5 h-5 text-red-600') ?> Or: practice ONE subject &amp; topic only
+        </span>
+      </div>
+      <p class="text-sm text-slate-700 mb-4">Pick a subject and a specific topic (or type your own) for a focused, single-topic test — skips the full multi-subject blueprint below.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+        <div>
+          <label for="qt-subject" class="block text-xs font-medium text-slate-500 mb-1.5">Subject</label>
+          <input id="qt-subject" type="text" list="subject-catalog" placeholder="e.g. Physics, or type your own"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label for="qt-topic" class="block text-xs font-medium text-slate-500 mb-1.5">Specific topic</label>
+          <input id="qt-topic" type="text" list="qt-topic-options" placeholder="e.g. Rotational Mechanics, or type your own"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
+          <datalist id="qt-topic-options"></datalist>
+        </div>
+        <div>
+          <label for="qt-count" class="block text-xs font-medium text-slate-500 mb-1.5">Questions</label>
+          <select id="qt-count" class="w-full px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
+            <option value="10">10</option><option value="20" selected>20</option><option value="30">30</option><option value="50">50</option>
+          </select>
+        </div>
+        <div>
+          <label for="qt-duration" class="block text-xs font-medium text-slate-500 mb-1.5">Duration (minutes)</label>
+          <input id="qt-duration" type="number" min="5" max="180" value="30" placeholder="e.g. 30"
+            class="w-full px-3 py-2.5 rounded-xl bg-red-50 border border-red-100 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
+        </div>
+        <button type="button" id="qt-launch" <?= $aiReady ? '' : 'disabled title="AI test creation is not available right now"' ?>
+          class="w-full py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+          <?= icon('sparkles', 'w-4 h-4') ?><span>Create Topic-wise Test</span>
+        </button>
       </div>
     </div>
   </main>

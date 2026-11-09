@@ -50,7 +50,6 @@ final class Gemini
             $response = curl_exec($ch);
             $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
             $curlError = curl_error($ch);
-            curl_close($ch);
 
             if ($response === false) {
                 $lastError = 'network error: ' . $curlError;

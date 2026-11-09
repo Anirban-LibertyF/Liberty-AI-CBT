@@ -19,7 +19,7 @@ final class Attempts
         $pdo = db();
         $pdo->beginTransaction();
         try {
-            $pdo->prepare("INSERT INTO attempts (exam_id, started_at) VALUES (?, UTC_TIMESTAMP())")->execute([$examId]);
+            $pdo->prepare("INSERT INTO attempts (exam_id, user_id, started_at) VALUES (?, ?, UTC_TIMESTAMP())")->execute([$examId, Auth::user()['id'] ?? null]);
             $attemptId = (int) $pdo->lastInsertId();
             // Question 1 is visited immediately (NOT_ANSWERED); the rest start NOT_VISITED.
             $pdo->prepare(
@@ -33,6 +33,26 @@ final class Attempts
             throw $e;
         }
         return $attemptId;
+    }
+
+    /** Starts the exam clock (once) when the candidate leaves the instructions page. */
+    public static function begin(int $attemptId): void
+    {
+        db()->prepare(
+            "UPDATE attempts SET started_at = UTC_TIMESTAMP(), begun_at = UTC_TIMESTAMP()
+              WHERE id = ? AND status = 'in_progress' AND begun_at IS NULL"
+        )->execute([$attemptId]);
+    }
+
+    /** Sections of a paper with their question counts and topics, for the instructions page. */
+    public static function outline(int $examId): array
+    {
+        $st = db()->prepare(
+            'SELECT section, COUNT(*) AS n, GROUP_CONCAT(DISTINCT topic ORDER BY topic SEPARATOR \', \') AS topics
+               FROM questions WHERE exam_id = ? GROUP BY section ORDER BY MIN(position)'
+        );
+        $st->execute([$examId]);
+        return $st->fetchAll();
     }
 
     /** Attempt joined with its exam, plus remaining seconds. */
@@ -49,6 +69,13 @@ final class Attempts
         $row = $st->fetch();
         if (!$row) {
             throw new AppError('Attempt not found.', 404);
+        }
+        $row['not_begun'] = $row['status'] === 'in_progress' && $row['begun_at'] === null;
+        if ($row['not_begun']) {
+            // still on the instructions page: the clock has not started
+            $row['remaining'] = (int) $row['duration_minutes'] * 60;
+            $row['past_deadline'] = 0;
+            return $row;
         }
         $deadline = (int) $row['start_ts'] + (int) $row['duration_minutes'] * 60;
         $row['remaining'] = max(0, $deadline - (int) $row['now_ts']);
@@ -133,6 +160,9 @@ final class Attempts
         if ($a['status'] !== 'in_progress') {
             throw new AppError('This exam has already been submitted.', 409);
         }
+        if ($a['not_begun']) {
+            throw new AppError('Please read the instructions and click "I am ready to begin" first.', 409);
+        }
         if ($a['past_deadline'] > self::GRACE_SECONDS) {
             self::submit($attemptId);
             throw new AppError('Time is up. Your exam was submitted.', 409);
@@ -216,6 +246,19 @@ final class Attempts
     }
 
     /** Submitted attempts from this browser session's own list, most recent first. */
+    public static function historyForUser(int $userId): array
+    {
+        $st = db()->prepare(
+            "SELECT a.id, a.exam_id, a.submitted_at, a.correct_count, a.incorrect_count, a.unattempted_count,
+                    a.total_score, a.max_score, e.title
+               FROM attempts a JOIN exams e ON e.id = a.exam_id
+              WHERE a.user_id = ? AND a.status = 'submitted'
+              ORDER BY a.submitted_at DESC"
+        );
+        $st->execute([$userId]);
+        return $st->fetchAll();
+    }
+
     public static function historyForSession(array $attemptIds): array
     {
         $attemptIds = array_values(array_unique(array_map('intval', $attemptIds)));

@@ -45,6 +45,7 @@
   function syncForm() {
     $('#f-title').value = state.title;
     $('#f-duration').value = state.duration;
+    $('#f-total').value = state.total;
     $('#f-positive').value = state.positive;
     $('#f-negative').value = state.negative;
     $('#f-difficulty').value = state.difficulty;
@@ -109,6 +110,11 @@
     })
   );
   $('#f-title').addEventListener('input', (e) => (state.title = e.target.value));
+  $('#f-total').addEventListener('input', (e) => {
+    state.total = Math.max(5, Math.min(200, Number(e.target.value) || 40));
+    document.querySelectorAll('.count-btn').forEach((b) => b.classList.toggle('font-bold', Number(b.dataset.count) === state.total));
+    document.querySelectorAll('[data-total-label]').forEach((el) => (el.textContent = state.total));
+  });
   $('#f-duration').addEventListener('input', (e) => (state.duration = Number(e.target.value) || 60));
   $('#f-positive').addEventListener('input', (e) => (state.positive = Number(e.target.value) || 2));
   $('#f-negative').addEventListener('input', (e) => (state.negative = Number(e.target.value) || 0));
@@ -239,8 +245,7 @@
   }
 
   async function launch() {
-    const err = $('#gen-error');
-    err.classList.add('hidden');
+    if (!(await window.requireAuth())) return;
     try {
       const created = await api('api/exam_create.php', {
         title: state.title,
@@ -258,9 +263,7 @@
       renderBatches();
       runPending();
     } catch (e) {
-      err.innerHTML = `<p class="font-semibold">We could not create your test</p><p class="mt-0.5 text-rose-700">${esc(e.message)}</p>`;
-      err.classList.remove('hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      notify({ title: 'We could not create your test', message: e.message, type: 'error' });
     }
   }
 
@@ -276,13 +279,14 @@
   });
 
   $('#qt-launch')?.addEventListener('click', () => {
-    const err = $('#gen-error');
     const subject = $('#qt-subject').value.trim();
     const topic = $('#qt-topic').value.trim();
     if (!subject || !topic) {
-      err.innerHTML = `<p class="font-semibold">Pick a subject and a topic</p><p class="mt-0.5 text-rose-700">Both fields are required for a topic-wise test — select one from the list or type your own.</p>`;
-      err.classList.remove('hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      notify({
+        title: 'Pick a subject and a topic',
+        message: 'Both fields are required for a topic-wise test — select one from the list or type your own.',
+        type: 'warning',
+      }).then(() => (subject ? $('#qt-topic') : $('#qt-subject')).focus());
       return;
     }
     state.presetId = null;

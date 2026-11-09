@@ -15,6 +15,8 @@ require_once __DIR__ . '/Gemini.php';
 require_once __DIR__ . '/Exams.php';
 require_once __DIR__ . '/Attempts.php';
 require_once __DIR__ . '/Coach.php';
+require_once __DIR__ . '/Auth.php';
+require_once __DIR__ . '/Translate.php';
 require_once __DIR__ . '/layout.php';
 
 // Must happen before any HTML/JSON output: once the body starts streaming, PHP can no
@@ -67,7 +69,7 @@ set_exception_handler(function (Throwable $e): void {
     $message = $e instanceof AppError
         ? $e->getMessage()
         : (($e instanceof PDOException && in_array($e->getCode(), [1049, 2002, 1045, '1049', '2002', '1045'], true))
-            ? 'LibertyCBT.Ai is temporarily unavailable. Please try again in a few minutes.'
+            ? 'MasterjeeCBT.Ai is temporarily unavailable. Please try again in a few minutes.'
             : 'Something went wrong. Please try again.');
     if (!headers_sent()) {
         http_response_code($status);
@@ -82,16 +84,11 @@ set_exception_handler(function (Throwable $e): void {
         echo '<p style="font-family:system-ui;padding:2rem">' . h($message) . ' <a href="index.php">Back to home</a></p>';
         return;
     }
-    page_head('LibertyCBT.Ai', 'min-h-screen bg-red-50 text-slate-900');
+    page_head('MasterjeeCBT.Ai', 'min-h-screen bg-red-50 text-slate-900');
     ?>
     <header class="border-b border-red-100 bg-white backdrop-blur-md sticky top-0 z-30">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <div class="logo-3d w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">LC</div>
-          <div>
-            <h1 class="text-lg sm:text-xl font-bold tracking-tight"><span class="brand-gradient">LibertyCBT</span><span class="text-slate-900">.Ai</span></h1>
-          </div>
-        </div>
+        <?= brand_lockup() ?>
         <div class="flex items-center gap-3">
           <?php site_nav(); ?>
         </div>
@@ -169,7 +166,18 @@ function grant(string $kind, int $id): void
 function owns(string $kind, int $id): bool
 {
     start_session();
-    return !empty($_SESSION['own'][$kind][$id]);
+    if (!empty($_SESSION['own'][$kind][$id])) {
+        return true;
+    }
+    // A signed-in candidate also owns their past attempts, so history works across devices/sessions.
+    if ($kind === 'attempt' && ($u = Auth::user())) {
+        $st = db()->prepare('SELECT 1 FROM attempts WHERE id = ? AND user_id = ?');
+        $st->execute([$id, $u['id']]);
+        if ($st->fetchColumn()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // ---------------------------------------------------------------- request helpers

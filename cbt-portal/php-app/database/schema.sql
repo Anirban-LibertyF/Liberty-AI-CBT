@@ -84,13 +84,25 @@ CREATE TABLE IF NOT EXISTS question_options (
   CONSTRAINT fk_opt_q FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- Registered candidates (an account is required to sit an exam).
+CREATE TABLE IF NOT EXISTS users (
+  id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name          VARCHAR(80)  NOT NULL,
+  phone         CHAR(10)     NOT NULL UNIQUE,
+  email         VARCHAR(190) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 -- A candidate sitting an exam. Times are UTC. The server owns the clock:
 -- deadline = started_at + exams.duration_minutes.
 CREATE TABLE IF NOT EXISTS attempts (
   id               INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   exam_id          INT UNSIGNED NOT NULL,
+  user_id          INT UNSIGNED NULL,
   status           ENUM('in_progress','submitted') NOT NULL DEFAULT 'in_progress',
-  started_at       DATETIME NOT NULL,
+  started_at       DATETIME NOT NULL,                    -- the exam clock starts here (reset when the candidate clicks "begin")
+  begun_at         DATETIME NULL,                        -- NULL while the candidate is still on the instructions page
   submitted_at     DATETIME NULL,
   -- filled in when the attempt is submitted
   correct_count     SMALLINT UNSIGNED NULL,
@@ -99,7 +111,21 @@ CREATE TABLE IF NOT EXISTS attempts (
   total_score       DECIMAL(8,2) NULL,
   max_score         DECIMAL(8,2) NULL,
   KEY idx_attempt_exam (exam_id),
-  CONSTRAINT fk_attempt_exam FOREIGN KEY (exam_id) REFERENCES exams (id) ON DELETE CASCADE
+  KEY idx_attempt_user (user_id),
+  CONSTRAINT fk_attempt_exam FOREIGN KEY (exam_id) REFERENCES exams (id) ON DELETE CASCADE,
+  CONSTRAINT fk_attempt_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Cached Bengali (lang = 'bn') versions of questions, translated on first use.
+CREATE TABLE IF NOT EXISTS question_translations (
+  question_id   INT UNSIGNED NOT NULL,
+  lang          CHAR(2)      NOT NULL,
+  question_text MEDIUMTEXT   NOT NULL,
+  options_json  TEXT         NOT NULL,                   -- {"A": "...", "B": "...", ...}
+  explanation   MEDIUMTEXT   NULL,
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (question_id, lang),
+  CONSTRAINT fk_qt_q FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- Palette state + chosen option + time spent, per question per attempt.

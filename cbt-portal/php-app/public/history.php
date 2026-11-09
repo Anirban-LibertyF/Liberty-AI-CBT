@@ -2,18 +2,14 @@
 declare(strict_types=1);
 require __DIR__ . '/../src/bootstrap.php';
 
-start_session();
-$ids = array_keys($_SESSION['own']['attempt'] ?? []);
-$history = Attempts::historyForSession($ids);
+$user = Auth::user();
+$history = $user ? Attempts::historyForUser((int) $user['id']) : [];
 
-page_head('My Test — LibertyCBT.Ai', 'min-h-screen bg-red-50 text-slate-900 pb-16');
+page_head('My Test — MasterjeeCBT.Ai', 'min-h-screen bg-red-50 text-slate-900 pb-16');
 ?>
 <header class="border-b border-red-100 bg-white backdrop-blur-md sticky top-0 z-30">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <div class="logo-3d w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center shadow-lg shadow-red-600/20 text-white font-extrabold tracking-tight">LC</div>
-      <h1 class="text-lg sm:text-xl font-bold tracking-tight"><span class="brand-gradient">LibertyCBT</span><span class="text-slate-900">.Ai</span></h1>
-    </div>
+    <?= brand_lockup() ?>
     <div class="flex items-center gap-3">
       <?php site_nav(); ?>
     </div>
@@ -24,7 +20,7 @@ page_head('My Test — LibertyCBT.Ai', 'min-h-screen bg-red-50 text-slate-900 pb
   <?php if (!$history): ?>
   <div class="p-8 rounded-2xl bg-white border border-red-100 text-center text-slate-500">
     <?= icon('inbox', 'w-8 h-8 text-red-300 mx-auto mb-3') ?>
-    <p class="text-sm">No submitted tests yet on this device.</p>
+    <p class="text-sm"><?= $user ? 'No submitted tests yet.' : 'Log in to see your test history.' ?></p>
     <a href="index.php" class="inline-block mt-4 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold">Take a test</a>
   </div>
   <?php else: ?>
