@@ -8,7 +8,7 @@ final class Translate
      * @param list<int> $questionIds questions that belong to the caller's exam
      * @return array<int, array{html:string, options: array<string,string>}> rendered Bengali HTML per question id
      */
-    public static function bengali(array $questionIds): array
+    public static function bengali(array $questionIds, bool $withExplanation = false): array
     {
         $questionIds = array_values(array_unique(array_map('intval', $questionIds)));
         if (!$questionIds) {
@@ -18,10 +18,10 @@ final class Translate
         $pdo = db();
 
         $have = [];
-        $st = $pdo->prepare("SELECT question_id, question_text, options_json FROM question_translations WHERE lang = 'bn' AND question_id IN ($in)");
+        $st = $pdo->prepare("SELECT question_id, question_text, options_json, explanation FROM question_translations WHERE lang = 'bn' AND question_id IN ($in)");
         $st->execute($questionIds);
         foreach ($st->fetchAll() as $r) {
-            $have[(int) $r['question_id']] = [$r['question_text'], json_decode($r['options_json'], true) ?: []];
+            $have[(int) $r['question_id']] = [$r['question_text'], json_decode($r['options_json'], true) ?: [], $r['explanation']];
         }
 
         $missing = array_values(array_diff($questionIds, array_keys($have)));
@@ -31,17 +31,27 @@ final class Translate
             }
         }
 
+        if ($withExplanation) {
+            $need = array_keys(array_filter($have, fn ($t) => trim((string) $t[2]) === ''));
+            foreach (self::translateExplanations($need) as $qid => $text) {
+                $have[$qid][2] = $text;
+            }
+        }
+
         $out = [];
-        foreach ($have as $qid => [$text, $opts]) {
+        foreach ($have as $qid => [$text, $opts, $expl]) {
             $out[$qid] = [
                 'html'    => MathRenderer::render($text),
                 'options' => array_map(fn ($o) => MathRenderer::render((string) $o), $opts),
             ];
+            if ($withExplanation && trim((string) $expl) !== '') {
+                $out[$qid]['explanation'] = MathRenderer::render((string) $expl);
+            }
         }
         return $out;
     }
 
-    /** @param list<int> $ids @return array<int, array{0:string,1:array<string,string>}> */
+    /** @param list<int> $ids @return array<int, array{0:string,1:array<string,string>,2:?string}> */
     private static function translate(array $ids): array
     {
         $pdo = db();
@@ -119,7 +129,67 @@ final class Translate
                 continue;
             }
             $ins->execute([$id, $text, json_encode($o, JSON_UNESCAPED_UNICODE)]);
-            $out[$id] = [$text, $o];
+            $out[$id] = [$text, $o, null];
+        }
+        return $out;
+    }
+    /**
+     * Bengali versions of the step-by-step explanations (result page / PDF). Stored on the cached translation row.
+     * @param list<int> $ids questions that already have a cached Bengali question
+     * @return array<int,string> id => Bengali explanation
+     */
+    private static function translateExplanations(array $ids): array
+    {
+        if (!$ids) {
+            return [];
+        }
+        $pdo = db();
+        $in = implode(',', array_fill(0, count($ids), '?'));
+        $st = $pdo->prepare("SELECT id, explanation FROM questions WHERE id IN ($in)");
+        $st->execute($ids);
+        $items = [];
+        foreach ($st->fetchAll() as $q) {
+            if (trim((string) $q['explanation']) !== '') {
+                $items[] = ['id' => (int) $q['id'], 'explanation' => $q['explanation']];
+            }
+        }
+        if (!$items) {
+            return [];
+        }
+
+        $system = "You are a senior Bengali (বাংলা) paper-setter and teacher. Translate each step-by-step solution into natural, fluent Bengali as a teacher would write it in an answer key - not word for word.\n"
+            . "RULES: standard modern Bengali (শুদ্ধ চলিত); use Arabic digits 0-9 only (never ০-৯); keep UNCHANGED all numbers, units, symbols, formulas, equations, LaTeX such as \\frac{a}{b}, \\sqrt{x}, x^2, option letters (A/B/C/D), abbreviations and proper names. "
+            . "If the question tests English language itself, keep the English words being discussed as they are and explain in Bengali. Keep the same meaning, steps and length.";
+        $payload = [
+            'contents'          => [['parts' => [['text' => "Translate these explanations into Bengali:\n" . json_encode($items, JSON_UNESCAPED_UNICODE)]]]],
+            'systemInstruction' => ['parts' => [['text' => $system]]],
+            'generationConfig'  => [
+                'responseMimeType' => 'application/json',
+                'temperature'      => 0.3,
+                'responseSchema'   => [
+                    'type'  => 'ARRAY',
+                    'items' => [
+                        'type'       => 'OBJECT',
+                        'properties' => ['id' => ['type' => 'INTEGER'], 'explanation' => ['type' => 'STRING']],
+                        'required'   => ['id', 'explanation'],
+                        'propertyOrdering' => ['id', 'explanation'],
+                    ],
+                ],
+            ],
+        ];
+        $res = json_decode(Gemini::generate($payload), true);
+        if (!is_array($res)) {
+            return []; // the paper falls back to the English explanation
+        }
+        $upd = $pdo->prepare("UPDATE question_translations SET explanation = ? WHERE question_id = ? AND lang = 'bn'");
+        $out = [];
+        foreach ($res as $r) {
+            $id = (int) ($r['id'] ?? 0);
+            $text = trim((string) ($r['explanation'] ?? ''));
+            if ($id > 0 && $text !== '' && in_array($id, $ids, true)) {
+                $upd->execute([$text, $id]);
+                $out[$id] = $text;
+            }
         }
         return $out;
     }

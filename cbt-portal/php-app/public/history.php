@@ -56,9 +56,9 @@ page_head('My Test — MasterjeeCBT.Ai', 'min-h-screen bg-red-50 text-slate-900 
         <a href="result.php?attempt=<?= (int) $r['id'] ?>" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5">
           <?= icon('eye', 'w-4 h-4') ?><span>View Response</span>
         </a>
-        <a href="result.php?attempt=<?= (int) $r['id'] ?>&pdf=1" class="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-slate-700 text-xs sm:text-sm font-semibold border border-red-200 flex items-center gap-1.5">
+        <button type="button" onclick="pickPdfLanguage(<?= (int) $r['id'] ?>)" class="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-slate-700 text-xs sm:text-sm font-semibold border border-red-200 flex items-center gap-1.5 cursor-pointer">
           <?= icon('download', 'w-4 h-4') ?><span>Download PDF</span>
-        </a>
+        </button>
       </div>
     </div>
     <?php endforeach; ?>

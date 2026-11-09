@@ -30,7 +30,8 @@ fresh full-length timed paper written by Gemini, sit it in a real CBT interface,
 - Everything is **autosaved**; reload and resume where you left off. The server owns the clock and the answer key.
 
 **After the exam**
-- **Scorecard** with score, accuracy, sectional analytics, per-question time, full solutions, and PDF download.
+- **Scorecard** with score, accuracy, sectional analytics, per-question time and full solutions.
+- **PDF download** (My Test / Scorecard): a clean paper with every question, options, correct answer, your answer and explanation, in **English or Bengali** (Bengali is translated by Gemini and cached).
 - **AI performance coach** (offline analysis if no Gemini key).
 - **My Test** history linked to your account, searchable and sortable, available on any device after login; one-click re-attempt.
 

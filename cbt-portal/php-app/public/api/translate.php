@@ -23,4 +23,9 @@ $ids = $ids ? array_map('intval', array_column(
     'id'
 )) : [];
 
-json_out(['translations' => (object) Translate::bengali($ids)]);
+// explanations carry the answer, so they are only handed out once the attempt is submitted
+$st = db()->prepare('SELECT status FROM attempts WHERE id = ?');
+$st->execute([$attemptId]);
+$withExplanation = !empty($in['explanations']) && $st->fetchColumn() === 'submitted';
+
+json_out(['translations' => (object) Translate::bengali($ids, $withExplanation)]);

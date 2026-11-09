@@ -104,3 +104,33 @@ window.notify = function notify({ title = 'Notice', message = '', type = 'error'
     wrap.querySelector('button').focus();
   });
 };
+
+
+/** "Download PDF" language chooser: opens the printable paper (all questions + answers + explanations) in the chosen language. */
+window.pickPdfLanguage = function pickPdfLanguage(attemptId) {
+  document.getElementById('pdf-lang-modal')?.remove();
+  const wrap = document.createElement('div');
+  wrap.id = 'pdf-lang-modal';
+  wrap.className = 'fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm';
+  wrap.innerHTML = `
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl text-center" role="dialog" aria-modal="true">
+      <div class="text-lg font-extrabold text-slate-900">Download PDF</div>
+      <p class="text-sm text-slate-500 mt-1">All questions, correct answers and explanations. Choose the language / ভাষা বেছে নিন</p>
+      <div class="grid grid-cols-2 gap-3 mt-5">
+        <button data-l="en" class="py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold cursor-pointer">English</button>
+        <button data-l="bn" class="py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold cursor-pointer">বাংলা</button>
+      </div>
+      <button data-l="" class="mt-4 text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer">Cancel</button>
+    </div>`;
+  const close = () => { wrap.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  wrap.addEventListener('click', (e) => {
+    if (e.target === wrap) return close();
+    const b = e.target.closest('[data-l]');
+    if (!b) return;
+    close();
+    if (b.dataset.l) window.location.href = `paper.php?attempt=${attemptId}&lang=${b.dataset.l}&pdf=1`;
+  });
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(wrap);
+};

@@ -227,5 +227,5 @@ page_head($attempt['title'] . ' — Scorecard | MasterjeeCBT.Ai', 'min-h-screen 
   </div>
 </main>
 
-<script>window.RESULT = <?= js_json(['attemptId' => $attemptId, 'coach' => $coach, 'aiReady' => Gemini::isConfigured(), 'autoPrint' => isset($_GET['pdf'])]) ?>;</script>
+<script>window.RESULT = <?= js_json(['attemptId' => $attemptId, 'coach' => $coach, 'aiReady' => Gemini::isConfigured()]) ?>;</script>
 <?php page_foot(['assets/result.js']);

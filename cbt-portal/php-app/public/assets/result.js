@@ -43,8 +43,7 @@
   applyFilters();
 
   // ---------------------------------------------------------------- PDF download
-  $('#download-pdf')?.addEventListener('click', () => window.print());
-  if (R.autoPrint) setTimeout(() => window.print(), 300);
+  $('#download-pdf')?.addEventListener('click', () => window.pickPdfLanguage(R.attemptId));
 
   // ---------------------------------------------------------------- AI coach
   let coach = R.coach; // {source, report} | null
